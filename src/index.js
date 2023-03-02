@@ -1,4 +1,12 @@
 import * as Routines from "./routines";
+import {Palette, MetroColorPalette, StandardColorPalette} from "./palette.js";
+
+export {
+    Routines,
+    Palette,
+    MetroColorPalette,
+    StandardColorPalette
+}
 
 export default class Color {
     /**
@@ -11,10 +19,12 @@ export default class Color {
             color = "#000000";
         }
         if (typeof color === "string") {
-            color = Routines.expandHexColor(Routines.parseColor(color));
+            color = Routines.parseColor(color);
         }
         if (color && Routines.isColor(color)) {
             this._value = color;
+        } else {
+            this._value = undefined
         }
     }
 
@@ -359,5 +369,18 @@ export default class Color {
      */
     equal(color) {
         return Routines.equal(this._value, color);
+    }
+
+    random(colorType, alpha){
+        this._value = Routines.randomColor(colorType, alpha)
+    }
+
+    static isColor(val){
+        const color = Routines.parseColor(val)
+        return Routines.isColor(color)
+    }
+
+    static randomColor(colorType, alpha){
+        return Routines.randomColor(colorType, alpha)
     }
 }

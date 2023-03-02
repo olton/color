@@ -166,7 +166,7 @@ const MetroColorPalette = {
     taupe: "#87794e",
 };
 
-const Index = {
+const Palette = {
     color: function (
         name,
         palette = StandardColorPalette,
@@ -184,4 +184,4 @@ const Index = {
     },
 };
 
-export { StandardColorPalette, MetroColorPalette, Index };
+export { StandardColorPalette, MetroColorPalette, Palette };
