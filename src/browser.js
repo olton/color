@@ -1,4 +1,4 @@
-import Color, {Routines, Palette, StandardColorPalette, MetroColorPalette} from "./index.js";
+import {Color, Routines, Palette, StandardColorPalette, MetroColorPalette} from "./index.js";
 
 globalThis.Color = Color
 globalThis.color = c => new Color(c)

@@ -8,7 +8,7 @@ export {
     StandardColorPalette
 }
 
-export default class Color {
+export class Color {
     /**
      * Private method for setting value. Do not use outside
      * @param {*} color
