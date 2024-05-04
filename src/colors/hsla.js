@@ -7,6 +7,6 @@ export default class HSLA {
     }
 
     toString(){
-        return `hsla(${this.h},${this.s},${this.l},${this.a})`;
+        return "hsla(" + [Math.round(this.h), Math.round(this.s*100)+"%", Math.round(this.l*100)+"%", parseFloat(this.a).toFixed(2)].join(", ") + ")";
     }
 }
