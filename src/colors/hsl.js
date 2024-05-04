@@ -6,6 +6,6 @@ export default class HSL {
     }
 
     toString(){
-        return `hsl(${this.h},${this.s},${this.l})`;
+        return "hsl(" + [Math.round(this.h), Math.round(this.s*100)+"%", Math.round(this.l*100)+"%"].join(", ") + ")";
     }
 }
