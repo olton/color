@@ -28,6 +28,18 @@ export const colorDefaultProps = {
     alpha: 1,
 };
 
+export const test = (color) => {
+    const _isHEX = color => /^#([A-Fa-f0-9]{3}){1,2}$/.test(color);
+    const _isRGB = color => /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/.test(color);
+    const _isRGBA = color => /^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*(0(\.\d+)?|1(\.0+)?)\s*\)$/.test(color);
+    const _isHSV = color => /^hsv\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/.test(color);
+    const _isHSL = color => /^hsl\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/.test(color);
+    const _isHSLA = color => /^hsla\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*(0(\.\d+)?|1(\.0+)?)\s*\)$/.test(color);
+    const _isCMYK = color => /^cmyk\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/.test(color);
+
+    return _isHEX(color) || _isRGB(color) || _isHSV(color) || _isHSLA(color) || _isHSLA(color) || _isRGBA(color) || _isHSL(color) || _isCMYK(color);
+}
+
 /**
  * Create color in specified format
  * @param {string} colorType
@@ -47,6 +59,8 @@ export const createColor = (colorType = "hex", from = "#000000") => {
 
     return toColor(baseColor, colorType.toLowerCase());
 };
+
+export const create = createColor
 
 /**
  * Expand shorthand form (e.g. "#03F") to full form (e.g. "#0033FF")
@@ -72,12 +86,15 @@ export const expandHexColor = function (hex) {
     return hex[0] === "#" ? hex : "#" + hex;
 };
 
+export const expand = expandHexColor
+
 /**
  * Check if specified color is dark
  * @param {*} color
  * @returns {boolean|undefined}
  */
 export const isDark = color => {
+    color = parseColor(color)
     if (!isColor(color)) return;
     const rgb = toRGB(color);
     const YIQ = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
@@ -99,7 +116,7 @@ export const isLight = color => {
  * @returns {boolean|undefined}
  */
 export const isHSV = color => {
-    return color instanceof HSV;
+    return parseColor(color) instanceof HSV;
 };
 
 /**
@@ -108,7 +125,7 @@ export const isHSV = color => {
  * @returns {boolean|undefined}
  */
 export const isHSL = color => {
-    return color instanceof HSL;
+    return parseColor(color) instanceof HSL;
 };
 
 /**
@@ -117,7 +134,7 @@ export const isHSL = color => {
  * @returns {boolean|undefined}
  */
 export const isHSLA = color => {
-    return color instanceof HSLA;
+    return parseColor(color) instanceof HSLA;
 };
 
 /**
@@ -126,7 +143,7 @@ export const isHSLA = color => {
  * @returns {boolean|undefined}
  */
 export const isRGB = color => {
-    return color instanceof RGB;
+    return parseColor(color) instanceof RGB;
 };
 
 /**
@@ -135,7 +152,7 @@ export const isRGB = color => {
  * @returns {boolean|undefined}
  */
 export const isRGBA = color => {
-    return color instanceof RGBA;
+    return parseColor(color) instanceof RGBA;
 };
 
 /**
@@ -144,7 +161,7 @@ export const isRGBA = color => {
  * @returns {boolean|undefined}
  */
 export const isCMYK = color => {
-    return color instanceof CMYK;
+    return parseColor(color) instanceof CMYK;
 };
 
 /**
@@ -162,9 +179,15 @@ export const isHEX = color => {
  * @returns {boolean|undefined}
  */
 export const isColor = color => {
-    return !color
-        ? false
-        : isHEX(color) ||
+    if (!color) return false
+
+    if (typeof color === "string") {
+        return test(color)
+    }
+
+    color = parseColor(color)
+
+    return isHEX(color) ||
         isRGB(color) ||
         isRGBA(color) ||
         isHSV(color) ||
@@ -984,7 +1007,8 @@ export const createColorScheme = (color, name, format, options) => {
  * @returns {HSL|RGB|RGBA|string|HSV|CMYK|HSLA}
  */
 export const parseColor = function (color) {
-    const _color = color.toLowerCase();
+    console.log(color)
+    const _color = (""+color).toLowerCase();
 
     let a = _color
         .replace(/[^\d.,]/g, "")
@@ -1018,6 +1042,8 @@ export const parseColor = function (color) {
     return _color;
 };
 
+export const parse = parseColor
+
 /**
  * Create random color
  */
@@ -1033,3 +1059,5 @@ export const randomColor = (colorType = "hex", alpha = 1) => {
 
     return colorType === "hex" ? hex : toColor(hex, colorType, alpha);
 };
+
+export const random = randomColor
