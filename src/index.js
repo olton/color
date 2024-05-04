@@ -1,11 +1,16 @@
 import * as Routines from "./routines";
 import {Palette, MetroColorPalette, StandardColorPalette} from "./palette.js";
 
+const Primitives = {
+    ...Routines.Primitives
+}
+
 export {
     Routines,
     Palette,
     MetroColorPalette,
-    StandardColorPalette
+    StandardColorPalette,
+    Primitives
 }
 
 export class Color {
@@ -373,14 +378,5 @@ export class Color {
 
     random(colorType, alpha){
         this._value = Routines.randomColor(colorType, alpha)
-    }
-
-    static isColor(val){
-        const color = Routines.parseColor(val)
-        return Routines.isColor(color)
-    }
-
-    static randomColor(colorType, alpha){
-        return Routines.randomColor(colorType, alpha)
     }
 }

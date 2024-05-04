@@ -5,6 +5,15 @@ import RGB from "./colors/rgb";
 import RGBA from "./colors/rgba";
 import CMYK from "./colors/cmyk";
 
+export const Primitives = {
+    HSV,
+    HSL,
+    HSLA,
+    RGB,
+    RGBA,
+    CMYK,
+}
+
 export const colorTypes = {
     HEX: "hex",
     RGB: "rgb",
