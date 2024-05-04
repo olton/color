@@ -1,9 +1,11 @@
-import HSV from "./colors/hsv";
-import HSL from "./colors/hsl";
-import HSLA from "./colors/hsla";
-import RGB from "./colors/rgb";
-import RGBA from "./colors/rgba";
-import CMYK from "./colors/cmyk";
+import HSV from "./primitives/hsv";
+import HSL from "./primitives/hsl";
+import HSLA from "./primitives/hsla";
+import RGB from "./primitives/rgb";
+import RGBA from "./primitives/rgba";
+import CMYK from "./primitives/cmyk";
+
+import {StandardColorPalette, MetroColorPalette} from "./palette.js";
 
 export const Primitives = {
     HSV,
@@ -35,7 +37,64 @@ export const colorDefaultProps = {
     shade1: 0.6,
     shade2: 0.3,
     alpha: 1,
+    baseLight: "#ffffff",
+    baseDark: "self"
 };
+
+function convert(source, format) {
+    let result;
+    switch (format) {
+        case "hex":
+            result = source.map(function (v) {
+                return toHEX(v);
+            });
+            break;
+        case "rgb":
+            result = source.map(function (v) {
+                return toRGB(v);
+            });
+            break;
+        case "rgba":
+            result = source.map(function (v) {
+                return toRGBA(v, opt.alpha);
+            });
+            break;
+        case "hsl":
+            result = source.map(function (v) {
+                return toHSL(v);
+            });
+            break;
+        case "hsla":
+            result = source.map(function (v) {
+                return toHSLA(v, opt.alpha);
+            });
+            break;
+        case "cmyk":
+            result = source.map(function (v) {
+                return toCMYK(v);
+            });
+            break;
+        default:
+            result = source;
+    }
+
+    return result;
+}
+
+function clamp(num, min, max) {
+    return Math.max(min, Math.min(num, max));
+}
+
+function toRange(a, b, c) {
+    return a < b ? b : a > c ? c : a;
+}
+
+function shift(h, s) {
+    h += s;
+    while (h >= 360.0) h -= 360.0;
+    while (h < 0.0) h += 360.0;
+    return h;
+}
 
 export const test = (color) => {
     const _isHEX = color => /^#([A-Fa-f0-9]{3}){1,2}$/.test(color);
@@ -193,8 +252,6 @@ export const isColor = color => {
     if (typeof color === "string") {
         return test(color)
     }
-
-    color = parseColor(color)
 
     return isHEX(color) ||
         isRGB(color) ||
@@ -756,6 +813,156 @@ export const hueShift = (color, angle, alpha = 1) => {
     return toColor(hsv, type, alpha);
 };
 
+export const mix = (color1, color2, amount) => {
+
+    amount = (amount === 0) ? 0 : (amount || 50);
+
+    const rgb = new RGB(0,0,0);
+    const rgb1 = toRGB(color1);
+    const rgb2 = toRGB(color2);
+
+    const p = amount / 100;
+
+    rgb.r = Math.round(((rgb2.r - rgb1.r) * p) + rgb1.r);
+    rgb.g = Math.round(((rgb2.g - rgb1.g) * p) + rgb1.g);
+    rgb.b = Math.round(((rgb2.b - rgb1.b) * p) + rgb1.b);
+
+    return toHEX(rgb);
+}
+
+export const multiply = (color1, color2) => {
+    const rgb1 = toRGB(color1);
+    const rgb2 = toRGB(color2);
+    const rgb = new RGB();
+
+    rgb1.b = Math.floor(rgb1.b * rgb2.b / 255);
+    rgb1.g = Math.floor(rgb1.g * rgb2.g / 255);
+    rgb1.r = Math.floor(rgb1.r * rgb2.r / 255);
+
+    return toHEX(rgb);
+}
+
+export const shade = (color, amount) => {
+    if (!isColor(color)) {
+        throw new Error(color + " is not a valid color value!");
+    }
+
+    amount /= 100;
+
+    const type = colorType(color).toLowerCase();
+    const rgb = toRGB(color);
+    const t = amount < 0 ? 0 : 255;
+    const p = amount < 0 ? amount * -1 : amount;
+    let r, g, b, a;
+
+    r = (Math.round((t - rgb.r) * p) + rgb.r);
+    g = (Math.round((t - rgb.g) * p) + rgb.g);
+    b = (Math.round((t - rgb.b) * p) + rgb.b);
+
+    if (type === colorTypes.RGBA || type === colorTypes.HSLA) {
+        a = color.a;
+    }
+
+    return toColor(new RGB(r, g, b), type, a);
+}
+
+export const saturate = (color, amount) => {
+    let hsl, type, alpha;
+
+    if (!isColor(color)) {
+        throw new Error(color + " is not a valid color value!");
+    }
+
+    hsl = toHSL(color);
+    hsl.s += amount / 100;
+    hsl.s = clamp(hsl.s);
+
+    type = colorType(color).toLowerCase();
+
+    if (type === colorTypes.RGBA || type === colorTypes.HSLA) {
+        alpha = color.a;
+    }
+
+    return toColor(hsl, type, alpha);
+}
+
+export const desaturate = (color, amount) => {
+    let hsl, type, alpha;
+
+    if (!isColor(color)) {
+        throw new Error(color + " is not a valid color value!");
+    }
+
+    hsl = toHSL(color);
+    hsl.s -= amount / 100;
+    hsl.s = clamp(hsl.s);
+
+    type = colorType(color).toLowerCase();
+
+    if (type === colorTypes.RGBA || type === colorTypes.HSLA) {
+        alpha = color.a;
+    }
+
+    return toColor(hsl, type, alpha);
+}
+
+export const spin = (color, amount) => {
+    let hsl, type, alpha, hue;
+
+    if (!isColor(color)) {
+        throw new Error(color + " is not a valid color value!");
+    }
+
+    hsl = toHSL(color);
+    hue = (hsl.h + amount) % 360;
+    hsl.h = hue < 0 ? 360 + hue : hue;
+
+    type = colorType(color).toLowerCase();
+
+    if (type === colorTypes.RGBA || type === colorTypes.HSLA) {
+        alpha = color.a;
+    }
+
+    return toColor(hsl, type, alpha);
+}
+
+export const brighten = (color, amount) => {
+    let rgb, type, alpha;
+
+    if (!isColor(color)) {
+        throw new Error(color + " is not a valid color value!");
+    }
+
+    rgb = toRGB(color);
+    rgb.r = Math.max(0, Math.min(255, rgb.r - Math.round(255 * - (amount / 100))));
+    rgb.g = Math.max(0, Math.min(255, rgb.g - Math.round(255 * - (amount / 100))));
+    rgb.b = Math.max(0, Math.min(255, rgb.b - Math.round(255 * - (amount / 100))));
+
+    type = colorType(color).toLowerCase();
+
+    if (type === colorTypes.RGBA || type === colorTypes.HSLA) {
+        alpha = color.a;
+    }
+
+    return toColor(rgb, type, alpha);
+}
+
+export const add = (val1, val2, returnAs) => {
+    const color1 = parse(val1)
+    const color2 = parse(val2)
+    const c1 = toRGBA(color1, undefined);
+    const c2 = toRGBA(color2, undefined);
+    const result = new RGBA();
+    const to = (""+returnAs).toLowerCase() || "hex";
+
+    result.r = Math.round((c1.r + c2.r) / 2);
+    result.g = Math.round((c1.g + c2.g) / 2);
+    result.b = Math.round((c1.b + c2.b) / 2);
+    result.a = Math.round((c1.a + c2.a) / 2);
+
+    return toColor(result, returnAs, result.a);
+}
+
 /**
  * Create color scheme
  * @param color
@@ -782,64 +989,10 @@ export const createColorScheme = (color, name, format, options) => {
         return false;
     }
 
-    function convert(source, format) {
-        let result;
-        switch (format) {
-            case "hex":
-                result = source.map(function (v) {
-                    return toHEX(v);
-                });
-                break;
-            case "rgb":
-                result = source.map(function (v) {
-                    return toRGB(v);
-                });
-                break;
-            case "rgba":
-                result = source.map(function (v) {
-                    return toRGBA(v, opt.alpha);
-                });
-                break;
-            case "hsl":
-                result = source.map(function (v) {
-                    return toHSL(v);
-                });
-                break;
-            case "hsla":
-                result = source.map(function (v) {
-                    return toHSLA(v, opt.alpha);
-                });
-                break;
-            case "cmyk":
-                result = source.map(function (v) {
-                    return toCMYK(v);
-                });
-                break;
-            default:
-                result = source;
-        }
-
-        return result;
-    }
-
-    function clamp(num, min, max) {
-        return Math.max(min, Math.min(num, max));
-    }
-
-    function toRange(a, b, c) {
-        return a < b ? b : a > c ? c : a;
-    }
-
-    function shift(h, s) {
-        h += s;
-        while (h >= 360.0) h -= 360.0;
-        while (h < 0.0) h += 360.0;
-        return h;
-    }
 
     switch (name) {
         case "monochromatic":
-        case "mono":
+        case "mono": {
             if (opt.algorithm === 1) {
                 rgb = hsv2rgb(hsv);
                 rgb.r = toRange(
@@ -895,45 +1048,47 @@ export const createColorScheme = (color, name, format, options) => {
                 for (i = 1; i <= opt.distance; i++) {
                     v = clamp(v - opt.step, 0, 1);
                     s = clamp(s - opt.step, 0, 1);
-                    scheme.push({ h: h, s: s, v: v });
+                    scheme.push({h: h, s: s, v: v});
                 }
             } else if (opt.algorithm === 3) {
                 scheme.push(hsv);
                 for (i = 1; i <= opt.distance; i++) {
                     v = clamp(v - opt.step, 0, 1);
-                    scheme.push({ h: h, s: s, v: v });
+                    scheme.push({h: h, s: s, v: v});
                 }
             } else {
                 v = clamp(hsv.v + opt.step * 2, 0, 1);
-                scheme.push({ h: h, s: s, v: v });
+                scheme.push({h: h, s: s, v: v});
 
                 v = clamp(hsv.v + opt.step, 0, 1);
-                scheme.push({ h: h, s: s, v: v });
+                scheme.push({h: h, s: s, v: v});
 
                 scheme.push(hsv);
                 s = hsv.s;
                 v = hsv.v;
 
                 v = clamp(hsv.v - opt.step, 0, 1);
-                scheme.push({ h: h, s: s, v: v });
+                scheme.push({h: h, s: s, v: v});
 
                 v = clamp(hsv.v - opt.step * 2, 0, 1);
-                scheme.push({ h: h, s: s, v: v });
+                scheme.push({h: h, s: s, v: v});
             }
             break;
+        }
 
         case "complementary":
         case "complement":
-        case "comp":
+        case "comp": {
             scheme.push(hsv);
 
             h = shift(hsv.h, 180.0);
             scheme.push(new HSV(h, s, v));
             break;
+        }
 
         case "double-complementary":
         case "double-complement":
-        case "double":
+        case "double": {
             scheme.push(hsv);
 
             h = shift(h, 180.0);
@@ -946,9 +1101,10 @@ export const createColorScheme = (color, name, format, options) => {
             scheme.push(new HSV(h, s, v));
 
             break;
+        }
 
         case "analogous":
-        case "analog":
+        case "analog": {
             h = shift(h, opt.angle);
             scheme.push(new HSV(h, s, v));
 
@@ -958,42 +1114,42 @@ export const createColorScheme = (color, name, format, options) => {
             scheme.push(new HSV(h, s, v));
 
             break;
+        }
 
         case "triadic":
-        case "triad":
+        case "triad": {
             scheme.push(hsv);
             for (i = 1; i < 3; i++) {
                 h = shift(h, 120.0);
                 scheme.push(new HSV(h, s, v));
             }
             break;
+        }
 
         case "tetradic":
-        case "tetra":
+        case "tetra": {
             scheme.push(hsv);
-
             h = shift(hsv.h, 180.0);
             scheme.push(new HSV(h, s, v));
-
             h = shift(hsv.h, -1 * opt.angle);
             scheme.push(new HSV(h, s, v));
-
             h = shift(h, 180.0);
             scheme.push(new HSV(h, s, v));
-
             break;
+        }
 
-        case "square":
+        case "square": {
             scheme.push(hsv);
             for (i = 1; i < 4; i++) {
                 h = shift(h, 90.0);
                 scheme.push(new HSV(h, s, v));
             }
             break;
+        }
 
         case "split-complementary":
         case "split-complement":
-        case "split":
+        case "split": {
             h = shift(h, 180.0 - opt.angle);
             scheme.push(new HSV(h, s, v));
 
@@ -1002,6 +1158,31 @@ export const createColorScheme = (color, name, format, options) => {
             h = shift(hsv.h, 180.0 + opt.angle);
             scheme.push(new HSV(h, s, v));
             break;
+        }
+        case "material": {
+            var baseLight = opt.baseLight;
+            var baseDark = opt.baseDark === "self" || !opt.baseDark ? multiply(color, color) : opt.baseDark;
+
+            scheme.push({
+                "50": mix(baseLight, color, 10),
+                "100": mix(baseLight, color, 30),
+                "200": mix(baseLight, color, 50),
+                "300": mix(baseLight, color, 70),
+                "400": mix(baseLight, color, 85),
+                "500": mix(baseLight, color, 100),
+                "600": mix(baseDark, color, 92),
+                "700": mix(baseDark, color, 83),
+                "800": mix(baseDark, color, 74),
+                "900": mix(baseDark, color, 65),
+
+                "A100": lighten(saturate(mix(baseDark, color, 15), 80), 65),
+                "A200": lighten(saturate(mix(baseDark, color, 15), 80), 55),
+                "A400": lighten(saturate(mix(baseLight, color, 100), 55), 10),
+                "A700": lighten(saturate(mix(baseDark, color, 83), 65), 10)
+            })
+
+            break
+        }
 
         default:
             console.warn("Unknown scheme name");
@@ -1016,8 +1197,15 @@ export const createColorScheme = (color, name, format, options) => {
  * @returns {HSL|RGB|RGBA|string|HSV|CMYK|HSLA}
  */
 export const parseColor = function (color) {
-    console.log(color)
-    const _color = (""+color).toLowerCase();
+    let _color = (""+color).toLowerCase();
+
+    if (typeof StandardColorPalette[_color] !== 'undefined') {
+        _color = StandardColorPalette[_color];
+    }
+
+    if (typeof MetroColorPalette[_color] !== 'undefined') {
+        _color = MetroColorPalette[_color];
+    }
 
     let a = _color
         .replace(/[^\d.,]/g, "")
