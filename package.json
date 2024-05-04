@@ -2,7 +2,7 @@
   "name": "@olton/color",
   "description": "Color Manipulation library",
   "private": false,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Serhii Pimenov <serhii@pimenov.com.ua> (https://pimenov.com.ua)",
   "type": "module",
@@ -21,8 +21,8 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/index.cjs.js",
-  "module": "./dist/index.es.js",
+  "main": "./dist/color.cjs.js",
+  "module": "./dist/color.es.js",
   "funding": [
     {
       "type": "paypal",
