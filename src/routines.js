@@ -495,7 +495,7 @@ export const cmyk2rgb = cmyk => {
  */
 export const hsv2hsl = hsv => {
     let h, s, l, d;
-    h = hsv.h;
+    h = parseInt(hsv.h);
     l = (2 - hsv.s) * hsv.v;
     s = hsv.s * hsv.v;
     if (l === 0) {
@@ -509,6 +509,10 @@ export const hsv2hsl = hsv => {
         }
     }
     l /= 2;
+
+    if (Number.isNaN(s)) s = 0
+    if (Number.isNaN(l)) l = 0
+
     return new HSL(h, s, l);
 };
 
@@ -875,7 +879,7 @@ export const saturate = (color, amount) => {
 
     hsl = toHSL(color);
     hsl.s += amount / 100;
-    hsl.s = clamp(hsl.s);
+    hsl.s = clamp(0, 1, hsl.s);
 
     type = colorType(color).toLowerCase();
 
@@ -971,7 +975,7 @@ export const add = (val1, val2, returnAs) => {
  * @param options
  * @returns {boolean|*}
  */
-export const createColorScheme = (color, name, format, options) => {
+export const createColorScheme = (color, name, format = colorTypes.HEX, options) => {
     const opt = Object.assign({}, colorDefaultProps, options);
 
     let i;
@@ -980,15 +984,15 @@ export const createColorScheme = (color, name, format, options) => {
     let rgb, h, s, v;
 
     hsv = toHSV(color);
-    h = hsv.h;
-    s = hsv.s;
-    v = hsv.v;
 
     if (isHSV(hsv) === false) {
         console.warn("The value is a not supported color format!");
         return false;
     }
 
+    h = hsv.h;
+    s = hsv.s;
+    v = hsv.v;
 
     switch (name) {
         case "monochromatic":
@@ -1185,10 +1189,10 @@ export const createColorScheme = (color, name, format, options) => {
         }
 
         default:
-            console.warn("Unknown scheme name");
+            console.error("Unknown scheme name");
     }
 
-    return convert(scheme, format);
+    return name === "material" ? scheme[0] : convert(scheme, format);
 };
 
 /**
