@@ -6,7 +6,7 @@ const production = (process.env.MODE === 'production')
 
 const banner = `
 /*!
- * HooksJS - The set of hooks  (https://hooks.io)
+ * Color library - Color manipulation library
  * Copyright ${new Date().getFullYear()} by Serhii Pimenov
  * Licensed under MIT
  !*/
