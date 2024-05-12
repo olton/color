@@ -2,7 +2,7 @@
   "name": "@olton/color",
   "description": "Color Manipulation library",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "author": "Serhii Pimenov <serhii@pimenov.com.ua> (https://pimenov.com.ua)",
   "type": "module",
@@ -48,7 +48,6 @@
     "path": "^0.12.7",
     "shx": "^0.3.4",
     "cross-env": "^7.0.3",
-    "glob": "^10.3.12",
     "rollup-plugin-terser": "^7.0.2"
   }
 }

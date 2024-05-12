@@ -6,8 +6,8 @@ const Primitives = {
     ...Routines.Primitives
 }
 
-const version = "1.0.2"
-const build_time = "08.05.2024, 13:57:43"
+const version = "1.0.3"
+const build_time = "12.05.2024, 20:14:19"
 
 const info = () => {
     console.info(`%c Color Library %c v${version} %c ${build_time} `, "color: #ffffff; font-weight: bold; background: #ff00ff", "color: white; background: darkgreen", "color: white; background: #0080fe;")

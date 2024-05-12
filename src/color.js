@@ -1,5 +1,4 @@
 import * as Routines from "./routines.js";
-import {brighten} from "./routines.js";
 
 export class Color {
     /**

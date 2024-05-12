@@ -6,7 +6,7 @@ const production = (process.env.MODE === 'production')
 
 const banner = `
 /*!
- * Color library - Color manipulation library
+ * Color library  v${pkg.version} - Color manipulation library
  * Copyright ${new Date().getFullYear()} by Serhii Pimenov
  * Licensed under MIT
  !*/
